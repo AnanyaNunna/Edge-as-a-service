@@ -37,9 +37,9 @@ class Threads:
                                     f.write(auth_ip)
                     else:
                     #To be SFTPed directory_name="/files/"+req_msg
-                    conn.send("Hey! Don't check for the file it's not there!")
+                    conn.sendall(b"Hey! Don't check for the file it's not there!")
             else:
-                conn.send(b"Enter the license key, please: ")
+                conn.sendall(b"Enter the license key, please: ")
                 auth_msg = (conn.recv(1024).decode())
                 if auth_msg == "987654321":
                     f = open("auth.txt",'a')
