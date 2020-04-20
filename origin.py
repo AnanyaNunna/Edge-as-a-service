@@ -2,14 +2,15 @@ import os
 import sys
 import threading
 import time
+import socket
 
 #create a socket and listen
 #check auth.txt
 #If in auth.txt -> process file request
 # ELSE register and add the auth.txt -> process file request
 
-HOST = 0.0.0.1
-PORT = 4567
+HOST = "192.168.0.7"
+PORT = 52525
 
 class Threads:
 
@@ -25,17 +26,17 @@ class Threads:
             # collecting the time stamp immediately after the connection has been accepted
             time_stamp = datetime.now()
             hostIP_port = str(addr[0])
-            f = open("auth.txt",'r'):
+            f = open("auth.txt",'r')
             auth_ip_list = f.readlines()
             if hostIP_port in auth_ip_list:
                 print("Oh! You are already registered")
-                    req_msg = (conn.recv(1024).decode())
-                    if 'leave'in req_msg:
-                        with open("auth.txt", 'w') as f:
-                            for auth_ip in auth_ip_list:
-                                if hostIP_port != auth_ip.strip("\n"):
-                                    f.write(auth_ip)
-                    else:
+                req_msg = (conn.recv(1024).decode())
+                if 'leave'in req_msg:
+                    with open("auth.txt", 'w') as f:
+                        for auth_ip in auth_ip_list:
+                            if hostIP_port != auth_ip.strip("\n"):
+                                f.write(auth_ip)
+                else:
                     #To be SFTPed directory_name="/files/"+req_msg
                     conn.sendall(b"Hey! Don't check for the file it's not there!")
             else:
@@ -45,6 +46,12 @@ class Threads:
                     f = open("auth.txt",'a')
                     f.write(hostIP_port)
                     print("Welcome! You are registered")
+                    f = open("./files/"+file_to_send,'rb')
+                    l = f.read(1024)
+                    while (l):
+                        conn.sendall(l)
+                        l = f.read(1024)
+                    f.close()
                     #To be SFTPed directory_name="/files/"+req_msg
                     conn.send("Hey! Don't check for the file it's not there!")
                 else:
@@ -56,4 +63,3 @@ proc1 = Threads()
 thread1 = threading.Thread(name = "File request processing", target = proc1.service)
 
 thread1.start()
-

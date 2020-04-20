@@ -22,10 +22,10 @@ pr=[]
 x=open("./priority.txt","r")
 for i in x:
     pr.append(i) 
-HOST=1.1.1.1
-PORT=2345
-PORT_C=7896
-ORIGINIP=0.0.0.1
+HOST="192.168.0.7"
+PORT=52526
+PORT_C=52527
+ORIGINIP="192.168.0.7"
 class Threads:
 
     def __init__(self):
@@ -139,7 +139,7 @@ class Threads:
                     client(ORIGINIP,req_msg)
                 
                 while True: #better way maybe timeout
-                    if req_msg in os.listdir(./files/):
+                    if req_msg in os.listdir("./files/"):
                         send(req_msg, conn)
                         break
                 if len(cache_list) > 9:
@@ -157,6 +157,10 @@ class Threads:
                 if not recv_edge:
                     break
                 f.write(recv_edge)
+
+proc1 = Threads()
+
+proc1.service()
 
 
 
