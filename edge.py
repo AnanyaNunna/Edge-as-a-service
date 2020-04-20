@@ -51,6 +51,7 @@ class Threads:
     
     def send(self,file_to_send,conn1):
         f = open("./files/"+file_to_send,'rb')
+        print("Sending file now ....")
         l = f.read(1024)
         while (l):
             conn1.sendall(l)
@@ -107,10 +108,13 @@ class Threads:
             # collecting the time stamp immediately after the connection has been accepted
             time_stamp = datetime.now()
             hostIP_port = str(addr[0])
+            print("Connection established"+hostIP_port)
             if hostIP_port in convert().keys():
                 flag = 1
+                print("another edge server")
             else:
                 flag = 2
+                print("End user is sending")
 
         req_msg = (conn.recv(1024).decode())
         req_msg = str(req_msg)
@@ -119,10 +123,10 @@ class Threads:
             cache_list = get_cache()
             if req_msg.split(".")[0] in cache_list:
                 send(req_msg,conn)
-                conn.sendall(b"Hey! Don't check for the file it's not there!")
                 cache_list.remove(req_msg.split(".")[0])
                 cache_list.insert(0,req_msg.split(".")[0])
                 write_cache(cache_list)
+                print("updated cache")
 
             else:
                 cache_list = get_cache()
@@ -137,6 +141,7 @@ class Threads:
 
                 if call_origin:
                     client(ORIGINIP,req_msg)
+                    print("Calling origin")
                 
                 while True: #better way maybe timeout
                     if req_msg in os.listdir("./files/"):

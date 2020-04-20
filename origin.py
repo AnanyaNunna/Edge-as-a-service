@@ -26,6 +26,7 @@ class Threads:
             # collecting the time stamp immediately after the connection has been accepted
             time_stamp = datetime.now()
             hostIP_port = str(addr[0])
+            print("Connection established with !"+hostIP_port)
             f = open("auth.txt",'r')
             auth_ip_list = f.readlines()
             if hostIP_port in auth_ip_list:
@@ -49,11 +50,10 @@ class Threads:
                     f = open("./files/"+file_to_send,'rb')
                     l = f.read(1024)
                     while (l):
+                        print("Sending file now .....")
                         conn.sendall(l)
                         l = f.read(1024)
                     f.close()
-                    #To be SFTPed directory_name="/files/"+req_msg
-                    conn.send("Hey! Don't check for the file it's not there!")
                 else:
                     print("False identification. Intruder alert !  CYBER CELL NOTIFIED")
 
