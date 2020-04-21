@@ -2,6 +2,7 @@ import sys
 import time
 import threading
 import socket
+import os
 #(1)open socket
 #CHECK IF USER IS EDGE or END USER - update flag
 # Read message
@@ -22,10 +23,10 @@ pr=[]
 x=open("./priority.txt","r")
 for i in x:
     pr.append(i[:-1])
-HOST="192.168.0.22"
+HOST="192.168.0.7"
 PORT=52526
-PORT_C=52527
-ORIGINIP="192.168.0.7"
+PORT_C=52525
+ORIGINIP="192.168.0.22"
 class Threads:
 
     def __init__(self):
@@ -52,10 +53,10 @@ class Threads:
     def send(self,file_to_send,conn1):
         f = open("./files/"+file_to_send,'r')
         print("Sending file now ....")
-        l = f.read(1024)
-        while (l):
-            conn1.send(l.encode())
-            l = f.read(1024)
+        l=f.read()
+        l_len = len(l)
+        conn1.send(l_len.to_bytes(4,'big'))
+        conn1.send(l.encode())
         f.close()
 
     def convert(self):
@@ -71,39 +72,49 @@ class Threads:
 
     def update_edge(self, edge_stat_dict):
         f=open("./edgestat.txt","w")
-        for k,v in enumerate(edge_stat_dict):
+        for k,v in edge_stat_dict.items():
             f.write(k+":")
             for i in v[:-1]:
                 f.write(i+",")
             f.write(v[-1]+"\n")
 
     def client(self, ip_or_flag , file_name):
-        edge_stat_dict = convert()
+        edge_stat_dict = self.convert()
         if ip_or_flag == "broadcast":
             for ip in edge_stat_dict.keys():
-                c.connect(ip,PORT_C)
-                c.sendall("edge stats incomming")
-                f1=open("./edgestat.txt","r")
-                l=f1.read(1024)
-                while(l):
-                    c.sendall(l)
-                    l=f1.read(1024)
+                if(ip != HOST):
+                    self.c.connect((ip,PORT_C))
+                    self.c.send("edge stats incomming".encode())
+                    f1=open("./edgestat.txt","r")
+                    l=f1.read()
+                    l_len = len(l)
+                    self.c.send(l_len.to_bytes(4,'big'))
+                    self.c.send(l.encode())
 
         else:
-            f = open("c_"+file_name,'w')
-            c.connect(ip_or_flag,PORT_C)
-            c.sendall(file_name)
-            while (l):
-                l=c.recv(1024)
-                f.write(l)
-            f.close()
-            os.system("cp c_"+file+" "+file)
-            os.system("rm c_"+file)
+            self.c.connect((ip_or_flag,PORT_C))
+            self.c.send(file_name.encode())
+            #print("sent file name to origin")
+            msg=self.c.recv(1024).decode()
+            print(msg)
+            if "license" in msg:
+                pwd=input("Authentication required: Please enter the license key:")
+                self.c.send(pwd.encode())
+            l_len = int.from_bytes(self.c.recv(4), 'big')
+            g = open("./files/"+file_name,'w')
+            while (l_len):
+                print("writing the file now...")
+                l=self.c.recv(min(l_len, 4096)).decode()
+                l_len-=len(l)
+                g.write(l)
+            g.close()
+            print("Written to the file completely")
+            print("file is received from origin")
 
     def service(self):
-        self.s.listen()
-        print("Listening at port:" + str(PORT))
         while True:
+            self.s.listen()
+            print("Listening at port:" + str(PORT))
             conn, addr = self.s.accept()
             # collecting the time stamp immediately after the connection has been accepted
             hostIP_port = str(addr[0])
@@ -112,62 +123,61 @@ class Threads:
             if hostIP_port in edgestat_dict.keys():
                 flag = 1
                 print("another edge server")
-                break
             else:
                 flag = 2
                 print("End user is sending")
-                break
 
-        req_msg = (conn.recv(1024).decode())
-        req_msg = str(req_msg)
-        print(req_msg)
-        if ".txt" in req_msg or flag == 2:
-            cache_list = self.get_cache()
-            print("entered .txt loop")
-            print(cache_list)
-            if req_msg.split(".")[0] in cache_list:
-                print("entered .txt loop")
-                self.send(req_msg,conn)
-                print("sent .txt")
-                cache_list.remove(req_msg.split(".")[0])
-                cache_list.insert(0,req_msg.split(".")[0])
-                self.write_cache(cache_list)
-                print("updated cache")
-
-            else:
+            req_msg = (conn.recv(1024).decode())
+            req_msg = str(req_msg)
+            print(req_msg)
+            if ".txt" in req_msg or flag == 2:
                 cache_list = self.get_cache()
-                edge_stat_dict = self.convert()
-                call_origin = True
-                for i in pr:
-                    if req_msg.split(".")[0] in edge_stat_dict[i]:
-                        print("call client with the edge IP")
-                        call_origin = False
-                        self.client(i,req_msg)
-                        break
+                print("entered .txt loop")
+                print(cache_list)
+                if req_msg.split(".")[0] in cache_list:
+                    print("entered .txt loop")
+                    self.send(req_msg,conn)
+                    print("sent .txt")
+                    cache_list.remove(req_msg.split(".")[0])
+                    cache_list.insert(0,req_msg.split(".")[0])
+                    self.write_cache(cache_list)
+                    print("updated cache")
 
-                if call_origin:
-                    self.client(ORIGINIP,req_msg)
-                    print("Calling origin")
+                else:
+                    cache_list = self.get_cache()
+                    edge_stat_dict = self.convert()
+                    call_origin = True
+                    for i in pr:
+                        if req_msg.split(".")[0] in edge_stat_dict[i]:
+                            print("call client with the edge IP")
+                            call_origin = False
+                            self.client(i,req_msg)
+                            break
 
-                while True: #better way maybe timeout
-                    if req_msg in os.listdir("./files/"):
-                        self.send(req_msg, conn)
-                        break
-                if len(cache_list) > 9:
-                        cache_list.pop()
-                cache_list.insert(0,req_msg.split(".")[0])
-                self.write_cache(cache_list)
-                edge_stat_dict[hostIP_port]=cache_list
-                self.update_edge_cache(edge_stat_dict)
-                self.client("broadcast",req_msg)
+                    if call_origin:
+                        print("Calling origin")
+                        self.client(ORIGINIP,req_msg)
+                        
+                    self.send(req_msg, conn)
+                    if len(cache_list) > 9:
+                            cache_list.pop()
+                    cache_list.insert(0,req_msg.split(".")[0])
+                    self.write_cache(cache_list)
+                    edge_stat_dict[HOST]=cache_list
+                    print(edge_stat_dict)
+                    self.update_edge(edge_stat_dict)
+                    self.client("broadcast",req_msg)
 
-        elif "edge" in req_msg:
-            f=open("./edgestat.txt","w")
-            while True:
-                recv_edge = conn.recv(1024).decode()
-                if not recv_edge:
-                    break
-                f.write(recv_edge)
+            elif "edge" in req_msg:
+                f=open("./edgestat.txt","w")
+                l_len = int.from_bytes(self.s.recv(4), 'big')
+                while (l_len):
+                    print("writing the file now...")
+                    l=self.s.recv(min(l_len, 4096)).decode()
+                    l_len-=len(l)
+                    f.write(l)
+                f.close()
+           
 
 proc1 = Threads()
 

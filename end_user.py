@@ -11,13 +11,15 @@ while True:
     s.send((x+".txt").encode())
     print("Sent request")
     print("Waiting for file to be sent")
-    l=s.recv(1024)
-    f=open("./Downloads/"+x+".txt","w")
-    while (l):
-        l=s.recv(1024).decode()
-        f.write(l)
-        print("writing the file...")
-    f.close() 
+
+    l_len = int.from_bytes(self.s.recv(4), 'big')
+    g = open("./Downloads/"+x+".txt",'w')
+    while (l_len):
+        print("writing the file now...")
+        l=self.s.recv(min(l_len, 4096)).decode()
+        l_len-=len(l)
+        g.write(l)
+    g.close()
     y=input("YOU HAVE RECEIVED THE FILE. \n Continue for more? (y/n)")
     if y =='n':
         break
