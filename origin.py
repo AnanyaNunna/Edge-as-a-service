@@ -9,7 +9,7 @@ import socket
 #If in auth.txt -> process file request
 # ELSE register and add the auth.txt -> process file request
 
-HOST = "192.168.149.130"
+HOST = "192.168.0.22"
 PORT = 52525
 
 class Threads:
@@ -20,11 +20,15 @@ class Threads:
 
     def send(self,file_to_send,conn1):
         f = open("./files/"+file_to_send,'r')
+        print("Sending starts now ....")
+        l = f.read()
+        #while (l):
+        l_len = len(l)
+        conn1.send(l_len.to_bytes(4,'big'))
         print("Sending file now ....")
-        l = f.read(1024)
-        while (l):
-            conn1.send(l.encode())
-            l = f.read(1024)
+        conn1.send(l.encode())
+        print(l)
+        #l = f.read(1024)
         f.close()
 
     def service(self):
@@ -34,13 +38,13 @@ class Threads:
             conn, addr = self.s.accept()
             print("connection established with :")
             # collecting the time stamp immediately after the connection has been accepted
-            time_stamp = datetime.now()
             hostIP_port = str(addr[0])
             print(hostIP_port)
             print("Connection established with !"+hostIP_port)
             f = open("auth.txt",'r')
             auth_ip_list = f.readlines()
             if hostIP_port in auth_ip_list:
+                conn.send("Oh! You are already registered".encode())
                 print("Oh! You are already registered")
                 req_msg = (conn.recv(1024).decode())
                 if 'leave'in req_msg:
@@ -54,8 +58,9 @@ class Threads:
                     print("sent the file ")
             else:
                 req_msg = (conn.recv(1024).decode())
-                conn.send("Enter the license key, please: ").encode()
+                conn.send("Enter the license key, please: ".encode())
                 auth_msg = (conn.recv(1024).decode())
+                print(auth_msg)
                 if auth_msg == "987654321":
                     f = open("auth.txt",'a')
                     f.write(hostIP_port)
