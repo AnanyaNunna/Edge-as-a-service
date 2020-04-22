@@ -23,10 +23,10 @@ pr=[]
 x=open("./priority.txt","r")
 for i in x:
     pr.append(i[:-1])
-HOST="192.168.0.22"
+HOST="192.168.0.7"
 PORT=52526
 PORT_C=52525
-ORIGINIP="192.168.0.27"
+ORIGINIP="192.168.0.22"
 class Threads:
 
     def __init__(self):
@@ -41,7 +41,7 @@ class Threads:
         dat=f.readlines()
         for i in dat:
             cache_list.append(i[:-1])
-        if(cache_list[-1] == ''):
+        if(cache_list and cache_list[-1] == ''):
             cache_list = cache_list[:-1]
         return cache_list
 
@@ -71,10 +71,11 @@ class Threads:
         dat=f.readlines()
         for i in dat:
             line = i.split(":")
-            key = line[0]
-            line[1]=line[1].strip("\n")
-            edge_list = line[1].split(",")
-            d[key] = edge_list
+            if(len(line) == 2):
+                key = line[0]
+                line[1]=line[1].strip("\n")
+                edge_list = line[1].split(",")
+                d[key] = edge_list
         return d
 
     def update_edge(self, edge_stat_dict):
@@ -171,13 +172,8 @@ class Threads:
                     if call_origin:
                         print("Task : File not found in edgestat, CONTACT ORIGIN SERVER")
                         self.client(ORIGINIP,req_msg,PORT_C)
-<<<<<<< HEAD
                         
                     self.send(req_msg, conn,flag)
-=======
-
-                    self.send(req_msg, conn,1)
->>>>>>> 9e8d8563a00bccfb345afc2e6fd9e897962acd9f
                     print("Task : Sent file to End user from cache")
                     if len(cache_list) > 9:
                             cache_list.pop()
@@ -217,10 +213,6 @@ class Threads:
                     #f.write(l)
                 print("Task : Edge stat file modified")
                 f.close()
-<<<<<<< HEAD
-=======
-
->>>>>>> 9e8d8563a00bccfb345afc2e6fd9e897962acd9f
 
 proc1 = Threads()
 

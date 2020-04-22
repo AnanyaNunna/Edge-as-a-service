@@ -1,7 +1,2 @@
+rfc199
 rfc833
-<<<<<<< HEAD
-rfc333
-rfc334
-rfc523
-=======
->>>>>>> 9e8d8563a00bccfb345afc2e6fd9e897962acd9f
