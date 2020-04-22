@@ -26,17 +26,17 @@ for i in x:
 HOST="192.168.0.7"
 PORT=52526
 PORT_C=52525
-ORIGINIP="192.168.0.22"
+ORIGINIP="192.168.0.27"
 class Threads:
 
     def __init__(self):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.bind((HOST, PORT))
-        #self.c.bind((HOST, PORT_C))
 
     def get_cache(self):
         cache_list = []
+        print("Task : Fetching Cache list")
         f=open("./cache.txt","r")
         dat=f.readlines()
         for i in dat:
@@ -45,6 +45,7 @@ class Threads:
 
     def write_cache(self, cache_list):
         f=open("./cache.txt","w")
+        print("Task : Adding the received file into the Cache")
         for i in cache_list:
             f.write(i)
             f.write("\n")
@@ -84,6 +85,7 @@ class Threads:
     def client(self, ip_or_flag , file_name,port):
         edge_stat_dict = self.convert()
         if ip_or_flag == "broadcast":
+            print("CLIENT : Preparing to broadcast")
             for ip in edge_stat_dict.keys():
                 if(ip != HOST):
                     self.c.connect((ip,port))
@@ -98,8 +100,9 @@ class Threads:
         else:
             self.c.connect((ip_or_flag,port))
             self.c.send(file_name.encode())
-            #print("sent file name to origin")
+            print("CLIENT : Requesting file from ",ip_or_flag)
             msg=self.c.recv(1024).decode()
+            print("CLIENT RECEIVED: ",msg)
             print(msg)
             if "license" in msg:
                 pwd=input("Authentication required: Please enter the license key:")
@@ -113,8 +116,6 @@ class Threads:
                 g.write(l)
             g.close()
             self.c.shutdown(0)
-            print("Written to the file completely")
-            print("file is received from origin")
 
     def service(self):
         while True:
@@ -127,61 +128,69 @@ class Threads:
             edgestat_dict = self.convert()
             if hostIP_port in edgestat_dict.keys():
                 flag = 1
-                print("another edge server")
+                print("Request is coming from another edge server")
             else:
                 flag = 2
-                print("End user is sending")
+                print("Request is coming from another End user")
 
             req_msg = (conn.recv(1024).decode())
             req_msg = str(req_msg)
-            print(req_msg)
+            print("File Request is received :",req_msg)
             if ".txt" in req_msg or flag == 2:
+                print("Task : Get Cache list")
                 cache_list = self.get_cache()
-                print("entered .txt loop")
                 print(cache_list)
                 if req_msg.split(".")[0] in cache_list:
-                    print("entered .txt loop")
+                    print("Task : Requested file found in Cache list")
                     self.send(req_msg,conn,2)
-                    print("sent .txt")
+                    print("Task : Sent file to End user from cache")
                     cache_list.remove(req_msg.split(".")[0])
                     cache_list.insert(0,req_msg.split(".")[0])
                     self.write_cache(cache_list)
-                    print("updated cache")
+                    print("Task : Updated cache list")
 
                 else:
+                    print("Task : Requested file not found in Cache list")
                     cache_list = self.get_cache()
+                    print("Task : Extracted edgestat file ")
                     edge_stat_dict = self.convert()
                     print(edge_stat_dict)
                     call_origin = True
                     for i in pr:
                         if req_msg.split(".")[0] in edge_stat_dict[i]:
-                            print("call client with the edge IP")
+                            print("Task : File found in another edge server",i)
                             call_origin = False
                             self.client(i,req_msg,PORT)
                             break
 
                     if call_origin:
-                        print("Calling origin")
+                        print("Task : File not found in edgestat, CONTACT ORIGIN SERVER")
                         self.client(ORIGINIP,req_msg,PORT_C)
                         
                     self.send(req_msg, conn,1)
+                    print("Task : Sent file to End user from cache")
                     if len(cache_list) > 9:
                             cache_list.pop()
                     cache_list.insert(0,req_msg.split(".")[0])
                     self.write_cache(cache_list)
+                    print("Task : Updated cache list")
                     edge_stat_dict[HOST]=cache_list
                     print(edge_stat_dict)
                     self.update_edge(edge_stat_dict)
+                    print("Task : Updated edge stat file")
                     self.client("broadcast",req_msg,PORT)
+                    print("Task : Broadcasted edgestat file")
 
             elif "edge" in req_msg:
                 f=open("./edgestat.txt","w")
+                print("Task : Accept modified edge stat file")
                 l_len = int.from_bytes(self.s.recv(4), 'big')
                 while (l_len):
                     print("writing the file now...")
                     l=self.s.recv(min(l_len, 4096)).decode()
                     l_len-=len(l)
                     f.write(l)
+                print("Task : Edge stat file modified")
                 f.close()
            
 
