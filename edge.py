@@ -41,6 +41,8 @@ class Threads:
         dat=f.readlines()
         for i in dat:
             cache_list.append(i[:-1])
+        if(cache_list[-1] == ''):
+            cache_list = cache_list[:-1]
         return cache_list
 
     def write_cache(self, cache_list):
@@ -88,14 +90,15 @@ class Threads:
             print("CLIENT : Preparing to broadcast")
             for ip in edge_stat_dict.keys():
                 if(ip != HOST):
-                    self.c.connect((ip,port))
-                    self.c.send("edge stats incomming".encode())
+                    p=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    p.connect((ip,port))
+                    p.send("edge stats INCOMING$".encode())
                     f1=open("./edgestat.txt","r")
                     l=f1.read()
                     l_len = len(l)
-                    self.c.send(l_len.to_bytes(4,'big'))
-                    self.c.send(l.encode())
-                    self.c.shutdown(1)
+                    #p.send(l_len.to_bytes(4,'big'))
+                    p.send(l.encode())
+                    p.shutdown(1)
 
         else:
             self.c.connect((ip_or_flag,port))
@@ -184,12 +187,21 @@ class Threads:
             elif "edge" in req_msg:
                 f=open("./edgestat.txt","w")
                 print("Task : Accept modified edge stat file")
-                l_len = int.from_bytes(self.s.recv(4), 'big')
-                while (l_len):
-                    print("writing the file now...")
-                    l=self.s.recv(min(l_len, 4096)).decode()
-                    l_len-=len(l)
-                    f.write(l)
+                stat=req_msg.split("$")[1]
+                stat_line = stat.split("\n")
+                new_dict ={}
+                for i in stat_line:
+                    line = i.split(":")
+                    key = line[0]
+                    edge_list = line[1].split(",")
+                    new_dict[key] = edge_list
+                self.update_edge(new_dict)
+                #l_len = int.from_bytes(self.s.recv(4), 'big')
+                #while (l_len):
+                    #print("writing the file now...")
+                    #l=self.s.recv(min(l_len, 4096)).decode()
+                    #l_len-=len(l)
+                    #f.write(l)
                 print("Task : Edge stat file modified")
                 f.close()
            
