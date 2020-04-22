@@ -23,7 +23,7 @@ pr=[]
 x=open("./priority.txt","r")
 for i in x:
     pr.append(i[:-1])
-HOST="192.168.0.7"
+HOST="192.168.0.22"
 PORT=52526
 PORT_C=52525
 ORIGINIP="192.168.0.27"
@@ -130,6 +130,7 @@ class Threads:
             hostIP_port = str(addr[0])
             print("Connection established: "+hostIP_port)
             edgestat_dict = self.convert()
+            print(edgestat_dict)
             if hostIP_port in edgestat_dict.keys():
                 flag = 1
                 print("Request is coming from another edge server")
@@ -170,8 +171,13 @@ class Threads:
                     if call_origin:
                         print("Task : File not found in edgestat, CONTACT ORIGIN SERVER")
                         self.client(ORIGINIP,req_msg,PORT_C)
+<<<<<<< HEAD
                         
                     self.send(req_msg, conn,flag)
+=======
+
+                    self.send(req_msg, conn,1)
+>>>>>>> 9e8d8563a00bccfb345afc2e6fd9e897962acd9f
                     print("Task : Sent file to End user from cache")
                     if len(cache_list) > 9:
                             cache_list.pop()
@@ -188,8 +194,14 @@ class Threads:
             elif "edge" in req_msg:
                 f=open("./edgestat.txt","w")
                 print("Task : Accept modified edge stat file")
-                stat=req_msg.split("$")[1]
-                stat_line = stat.split("\n")
+                #stat=req_msg.split("$")[1]
+                temp = conn.recv(2048).decode()
+                print("\n")
+                print(temp)
+                #stat = req_msg.split("$")
+                stat_line = temp.split("\n")
+                print(stat_line)
+                stat_line = stat_line[:-1]
                 new_dict ={}
                 for i in stat_line:
                     line = i.split(":")
@@ -205,6 +217,10 @@ class Threads:
                     #f.write(l)
                 print("Task : Edge stat file modified")
                 f.close()
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9e8d8563a00bccfb345afc2e6fd9e897962acd9f
 
 proc1 = Threads()
 
