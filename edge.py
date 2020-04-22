@@ -56,7 +56,8 @@ class Threads:
     def send(self,file_to_send,conn1,flag):
         f = open("./files/"+file_to_send,'r')
         print("Sending file now ....")
-        if flag==2:
+        print(flag)
+        if flag==1:
             conn1.send(("Hey there, this is "+HOST).encode())
         l=f.read()
         l_len = len(l)
@@ -145,7 +146,7 @@ class Threads:
                 print(cache_list)
                 if req_msg.split(".")[0] in cache_list:
                     print("Task : Requested file found in Cache list")
-                    self.send(req_msg,conn,2)
+                    self.send(req_msg,conn,flag)
                     print("Task : Sent file to End user from cache")
                     cache_list.remove(req_msg.split(".")[0])
                     cache_list.insert(0,req_msg.split(".")[0])
@@ -170,7 +171,7 @@ class Threads:
                         print("Task : File not found in edgestat, CONTACT ORIGIN SERVER")
                         self.client(ORIGINIP,req_msg,PORT_C)
                         
-                    self.send(req_msg, conn,1)
+                    self.send(req_msg, conn,flag)
                     print("Task : Sent file to End user from cache")
                     if len(cache_list) > 9:
                             cache_list.pop()
@@ -204,7 +205,6 @@ class Threads:
                     #f.write(l)
                 print("Task : Edge stat file modified")
                 f.close()
-           
 
 proc1 = Threads()
 
