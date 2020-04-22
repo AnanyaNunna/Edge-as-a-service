@@ -171,13 +171,9 @@ class Threads:
                     if call_origin:
                         print("Task : File not found in edgestat, CONTACT ORIGIN SERVER")
                         self.client(ORIGINIP,req_msg,PORT_C)
-<<<<<<< HEAD
-                        
-                    self.send(req_msg, conn,flag)
-=======
 
-                    self.send(req_msg, conn,1)
->>>>>>> 9e8d8563a00bccfb345afc2e6fd9e897962acd9f
+                    self.send(req_msg, conn,flag)
+
                     print("Task : Sent file to End user from cache")
                     if len(cache_list) > 9:
                             cache_list.pop()
@@ -217,10 +213,6 @@ class Threads:
                     #f.write(l)
                 print("Task : Edge stat file modified")
                 f.close()
-<<<<<<< HEAD
-=======
-
->>>>>>> 9e8d8563a00bccfb345afc2e6fd9e897962acd9f
 
 proc1 = Threads()
 
