@@ -1,5 +1,6 @@
 import sys
 import os
+import time
 import socket
 PORT=52526
 ip="192.168.0.7" # closes edge server IP that is hard coded
@@ -10,6 +11,7 @@ while True:
     s.connect((ip,PORT))
     print("Going to send request")
     s.send((x+".txt").encode())
+    t1=time.time()
     print("Sent request")
     print("Waiting for file to be sent")
     l_len = int.from_bytes(s.recv(4), 'big')
@@ -20,6 +22,8 @@ while True:
         l_len-=len(l)
         g.write(l)
     g.close()
+    t2=time.time()
+    print("Time taken : ",str(t2-t1),"s\n")
     y=input("YOU HAVE RECEIVED THE FILE. \n Continue for more? (y/n)")
     if y =='n':
         break
