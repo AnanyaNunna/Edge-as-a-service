@@ -49,4 +49,5 @@ The end user can run this code by:
 $python3 end_user.py
 
 File requests must be given only in the following format: rfcxxx (where xxx is the rfc file number)
+Only files are that available in the Origin server can be requested.
 
