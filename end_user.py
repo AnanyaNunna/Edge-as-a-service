@@ -3,7 +3,7 @@ import os
 import time
 import socket
 PORT=52526
-ip="192.168.0.7" # closes edge server IP that is hard coded
+ip="52.14.167.243" # closes edge server IP that is hard coded
 while True:
     x=input("Hi!  WHAT FILE WOULD YOU LIKE TO ACCESS?")
     print(x)

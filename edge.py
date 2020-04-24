@@ -79,7 +79,7 @@ class Threads:
         return d
 
     def update_edge(self, edge_stat_dict):
-        f=open("./edgestat.txt","w")
+        f=open("./edgestat.txt","a")
         for k,v in edge_stat_dict.items():
             f.write(k+":")
             for i in v[:-1]:
