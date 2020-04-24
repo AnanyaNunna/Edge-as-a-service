@@ -1,0 +1,15 @@
+References:
+https://en.wikipedia.org/wiki/Edge_computing
+https://www.researchgate.net/publication/307888359_Challenges_and_Opportunities_in_Edge_Computing
+https://www.researchgate.net/publication/340849467_Edge_Computing_and_Distributed_Intelligence
+https://innovationatwork.ieee.org/how-the-edge-computing-layer-helps-with-latency/
+https://link.springer.com/article/10.1007%2Fs11277-020-07168-7
+https://www.researchgate.net/publication/321134141_An_Extensible_Edge_Computing_Architecture_Definition_Requirements_and_Enablers
+https://www.researchgate.net/project/FAR-EDGE
+https://www.researchgate.net/project/CloudFlow-2
+https://docs.aws.amazon.com/ec2/index.html
+https://www.geeksforgeeks.org/socket-programming-python/
+https://pymotw.com/2/socket/tcp.html
+https://docs.aws.amazon.com/vpc/latest/userguide/VPC_SecurityGroups.html
+https://www.codeproject.com/Articles/32633/Sending-Files-using-TCP
+https://learningnetwork.cisco.com/s/question/0D53i00000Kt3qQCAR/firewall-rules-for-icmp-tcpudp-port-7
